@@ -110,5 +110,5 @@ class Orders {
 
 }
 
-schema.loadClass(Products);
-module.exports = mongoose.model(Models.PRODUCTS, schema, Models.PRODUCTS);
+schema.loadClass(Orders);
+module.exports = mongoose.model(Models.ORDERS, schema, Models.ORDERS);

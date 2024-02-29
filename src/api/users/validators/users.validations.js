@@ -117,23 +117,13 @@ module.exports.users = async (req, res, next) => {
   const payload = {
     firstName: Joi.string().required().trim().error(new Error(user.firstName)),
     lastName: Joi.string().required().trim().error(new Error(user.lastName)),
+    userType: Joi.string().optional().trim().error(new Error(user.userType)),
     email: Joi.string().regex(emailReg).required().trim().error(new Error(user.emailId)),
     password: Joi.string().regex(reg).required().trim().error(new Error(user.password)),
     confirmPassword: Joi.string().valid(Joi.ref('password')).required().trim().error(new Error(user.existPassword))
   };
   try {
-    if(req?.userInfo){
-      payload.userType = Joi.string().required().valid(Object.keys(USERTYPE).map(a=>a.toLowerCase())).trim().error(new Error('invalid user type'));
-    }
-    console.log("######################################")
-    req.validatedParams = await validate(req, Joi.object().keys(payload));
-    console.log(req.validatedParams);
-    console.log("######################################")
-    if(req?.userInfo){
-      if(USERTYPE[req?.userInfo?.userType.toUpperCase()].priority >= USERTYPE[req?.validatedParams?.userType.toUpperCase()].priority){
-        throw new Error([400, 'permission denied!']);
-      }
-    }
+    req.validatedParams = await validate(req, payload);
     next();
   } catch (error) {
     handleFailureNew(req, res, error);

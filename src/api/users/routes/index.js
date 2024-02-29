@@ -13,7 +13,6 @@ const commonValidator = require('../../common.validations');
  */
 module.exports = (router) => {
   router.post('/users', usersValidator.users, usersController.createUser);
-  router.get('/user-profile', usersController.getUserProfile);
   router.get('/user-profile/:userId', commonValidator.userIdPayload, usersController.getUserProfile);
   router.put('/user-profile', usersValidator.updateUserProfile, usersController.updateUserProfile);
   router.delete('/user/:userId', commonValidator.userIdPayload, usersController.deleteUserProfile);

@@ -164,33 +164,17 @@ exports.checkUsersExist = async (req, res) => {
  */
 exports.createUser = async (req, res) => {
   try {
-    const { ORGANISATION, SUPERADMIN } = USERTYPE;
-    const { userId, firstName, lastName, email, password } = req.validatedParams;
-    let { userType=ORGANISATION.title, parentId = req?.userInfo?.userId, parentTree=req?.userInfo?.parentTree } = req.validatedParams;
+    const { userId, firstName, lastName, userType, email, password } = req.validatedParams;
     const userExistCheck = await Users.getUserByCondition({ email });
     if (userExistCheck) throw new Error([400, toast.alreadyExist(email)]);
-    if(!parentId) {
-      const supper = await Users.getUserByCondition({ userType:SUPERADMIN.title });
-      if (!supper) throw new Error([400, 'super admin not found']);
-      parentId = supper.userId;
-      parentTree = [supper.userId];
-    }else{
-      if(!parentTree.includes(parentId)){
-        parentTree.push(parentId);
-      }
-    }
     const userSalt = Encryption.makeUserSalt(16);
     const encryptPassword = Encryption.encryptPassword(password, userSalt);
     const fullName = firstName.concat(" ", lastName);
-    const payload = { userId, email, userSalt, password: encryptPassword, firstName, lastName, fullName, parentId, userType, parentTree };
+    const payload = { userId, email, userSalt, password: encryptPassword, firstName, lastName, fullName, userType };
     payload.emailVerifiedToken = generateId();
-    await Users.createUser(payload);
-    const message = toast.varificationCodeSentToEmail(email);
-    const verifyEmailLink = `${config.baseUrl}/api/v1/email-verification?email=${email}&token=${payload.emailVerifiedToken}`;
-    const mailContent = `Hello ${firstName}!\n\nPlease click on the below link and to verify your account.\n${verifyEmailLink}\n \nThanks & Regards, Medi-clear`;
-    // sendMail(email, 'Verify your email', mailContent);
-    console.log(verifyEmailLink, 'verifyEmailLink');
-    handleSuccessNew(req, res, { verifyEmailLink }, message);
+    createdUser= await Users.createUser(payload);
+    message= "User Successfully created"
+    handleSuccessNew(req, res, createdUser, message);
   } catch (error) {
     handleFailureNew(req, res, error);
   }
@@ -203,9 +187,8 @@ exports.createUser = async (req, res) => {
  */
 exports.getUserProfile = async (req, res) => {
   try {
-    const { userId } = req.userInfo;
     const uid = req?.validatedParams?.userId;
-    const query = uid? { parentTree:userId, userId:uid } : { userId };
+    const query = uid;
     const userDetails = await Users.getUserDetails(query);
     const message = (userDetails)?user.commonSuccess:user.notFound;
     handleSuccessNew(req, res, userDetails, message);

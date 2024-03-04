@@ -21,5 +21,4 @@ module.exports = (router) => {
   router.put('/forget-password', usersValidator.updateForgetPassword, usersController.updateForgetPassword);
   router.put('/change-password', usersValidator.changePassword, usersController.changePassword);
   router.put('/logout-all', authorize, usersController.logoutAll);
-  router.delete('/deleteAccount', usersController.deleteAccount);
 };

@@ -188,7 +188,8 @@ exports.createUser = async (req, res) => {
 exports.getUserProfile = async (req, res) => {
   try {
     const uid = req?.validatedParams?.userId;
-    const query = uid;
+    const query = {userId:uid};
+    console.log(query);
     const userDetails = await Users.getUserDetails(query);
     const message = (userDetails)?user.commonSuccess:user.notFound;
     handleSuccessNew(req, res, userDetails, message);
@@ -204,34 +205,11 @@ exports.getUserProfile = async (req, res) => {
  */
 exports.updateUserProfile = async (req, res) => {
   try {
-    const { userId } = req.userInfo;
     const uid = req?.validatedParams?.userId;
-    const query = uid? { parentTree:userId, userId:uid } : { userId };
+    const query = {userId:uid};
     const profileData = await Users.updateProfile(query, req.validatedParams);
     if (!profileData) throw new Error([400, user.notFound]);
     handleSuccessNew(req, res, { nModified: profileData?.nModified }, user.updateSuccess);
-  } catch (error) {
-    handleFailureNew(req, res, error);
-  }
-};
-
-/**
- * @description This function has method related to All shorten Urls List
- * @param {object} req HttpRequest Object
- * @param {object} res HttpResponse Object
- */
-exports.getUsersList = async (req,res) => {
-
-  try {
-    const { userId } = req.userInfo;
-    const { elle, searching, userId:parentId, userType } = req.validatedParams;
-    const search = searchAlgorithm({ users: Users }, searching);
-    const query = { $and: [{ $or: search }], parentTree:userId, status: true };
-    if(parentId) query.parentId = parentId;
-    if(userType) query.userType = userType;
-    const userData = await Users.getUsersList(query, elle);
-    const message = (!userData)? global.noRecord: global.commonSuccess;
-    handleSuccessNew(req, res, userData, message);
   } catch (error) {
     handleFailureNew(req, res, error);
   }
@@ -244,9 +222,8 @@ exports.getUsersList = async (req,res) => {
  */
 exports.deleteUserProfile = async (req, res) => {
   try {
-    const { userId } = req.userInfo;
     const uid = req?.validatedParams?.userId;
-    const query = uid? { parentTree:userId, userId:uid } : { userId };
+    const query = {userId:uid};
     const userDelete = await Users.deleteUser(query);
     const message = (userDelete)?user.commonSuccess:user.notFound;
     handleSuccessNew(req, res, userDelete, message);
